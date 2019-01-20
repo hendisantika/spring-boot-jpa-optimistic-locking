@@ -12,7 +12,7 @@
     <artifactId>spring-boot-jpa-optimistic-locking</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>spring-boot-jpa-optimistic-locking</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Demo project that shows optimistic locking with JPA (and Spring-Boot for a quick setup)</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -22,6 +22,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
 
         <dependency>

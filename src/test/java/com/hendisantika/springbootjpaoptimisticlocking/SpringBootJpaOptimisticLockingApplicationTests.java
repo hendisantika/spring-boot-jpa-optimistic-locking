@@ -4,25 +4,24 @@ import com.hendisantika.springbootjpaoptimisticlocking.domain.Movie;
 import com.hendisantika.springbootjpaoptimisticlocking.dto.MovieDTO;
 import com.hendisantika.springbootjpaoptimisticlocking.dto.Movies;
 import com.hendisantika.springbootjpaoptimisticlocking.repository.MovieRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class SpringBootJpaOptimisticLockingApplicationTests {
+class SpringBootJpaOptimisticLockingApplicationTests {
 
     @Autowired
     private MovieRepository movieRepository;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
+        movieRepository.deleteAll();
         movieRepository.save(new Movie("The great movie", 5));
         movieRepository.save(new Movie("The not so great movie", 4));
         movieRepository.save(new Movie("Yet another movie", 3));
@@ -33,9 +32,9 @@ public class SpringBootJpaOptimisticLockingApplicationTests {
      * Tests the situation, that there are two concurrent users working with a web application
      * and both operating on the same data at the same time.
      */
-    @Test(expected = ObjectOptimisticLockingFailureException.class)
-    public void testConcurrencyWriting() {
-        assertEquals("Number of movies in Database incorrect.", 4, movieRepository.count());
+    @Test
+    void testConcurrencyWriting() {
+        assertEquals(4, movieRepository.count(), "Number of movies in Database incorrect.");
 
         Movie theGreatMovieForUserOne = movieRepository.findByTitle("The great movie");
         Movie theGreatMovieForUserTwo = movieRepository.findByTitle("The great movie");
@@ -52,17 +51,15 @@ public class SpringBootJpaOptimisticLockingApplicationTests {
         Movie theUpdatedGreatMovieForUserOne = Movies.of(theGreatMovieDTOForUserOne);
         Movie theUpdatedGreatMovieForUserTwo = Movies.of(theGreatMovieDTOForUserTwo);
 
-        // The versions of the updateded movies are both 0.
+        // The versions of the updated movies are both 0.
         assertEquals(0, theUpdatedGreatMovieForUserOne.getVersion().intValue());
         assertEquals(0, theUpdatedGreatMovieForUserTwo.getVersion().intValue());
 
         // The backend tries to save both.
         movieRepository.save(theUpdatedGreatMovieForUserOne);
 
-        // OUTCH! Exception!
-        movieRepository.save(theUpdatedGreatMovieForUserTwo);
+        // OUTCH! Exception! The second save works on a stale version.
+        assertThrows(ObjectOptimisticLockingFailureException.class,
+                () -> movieRepository.save(theUpdatedGreatMovieForUserTwo));
     }
-
-
 }
-

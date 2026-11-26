@@ -15,7 +15,7 @@
     <description>Demo project that shows optimistic locking with JPA (and Spring-Boot for a quick setup)</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
     </properties>
 
     <dependencies>
